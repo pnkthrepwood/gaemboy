@@ -22,8 +22,6 @@ void gb::init()
 {
 	memset(mem, 0, MEM_SIZE);
 
-	reg = &regs[0];
-
 	pc = 0;
 
 	dbg_mode = false;
