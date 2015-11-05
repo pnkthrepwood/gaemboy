@@ -116,13 +116,18 @@ void gb::cycle()
 
 		case 0x0D: //DEC C
 			C--;
-			F |= (C)&1 		<<7;
-			F |= 1 				<<6;
+			F |= (C)&1==0 	<<7;
+			F |= 1 			<<6;
 			F |= (C)==0xF 	<<5; //??	
 		break;
 
 		case 0x0E: //LD C, d8
 			C = n1;
+			pc++;
+		break;
+
+		case 0x15: //DEC D
+			E = n1;
 			pc++;
 		break;
 
@@ -165,6 +170,10 @@ void gb::cycle()
 		case 0x89: //ADC A, C
 			A += C + flag_c();
 			
+			F |= ((Z)==0)&1		<<7;
+			F |= F&0x40			<<6;
+			F |= ((Z)==0xF)&1 	<<5; 
+			F |= ((((A&0xF + C&0xF)0xF0)>>4)>0)<<4; 		
 		break;
 
 		case 0xAF: //XOR A
