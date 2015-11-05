@@ -12,6 +12,20 @@ void wrong_opcode(byte op)
 	exit(0);
 }
 
+byte carry(byte A, byte B)
+{
+	((((A&0xF + B&0xF)&0xF0)>>4)>0)<<4; 	
+}
+
+void gb::set_c(byte b){
+	reset_z();
+	if (b) F &= (b<<4);
+}
+
+void gb::reset_z(){ F &= 0x80;}
+void gb::reset_n(){ F &= 0x40;}
+void gb::reset_h(){ F &= 0x20;}
+void gb::reset_c(){ F &= 0x10;}
 
 bool gb::flag_z(){ return (F>>7)&1; }
 bool gb::flag_n(){ return (F>>6)&1; }
@@ -131,14 +145,34 @@ void gb::cycle()
 			pc++;
 		break;
 
+		case 0x16: //LD D, d8
+			D = n1;
+			pc++;
+		break;		
+
+		case 0x17: //RLA
+			c = A&(1<<7);
+			A = (A<<1);
+			reset_z();
+			reset_n();
+			reset_h();
+		break;
+
+		case 0x19:
+			
+		break;
+
 		case 0x1E: //LD E, d8
 			E = n1;
 			pc++;
 		break;
 
 		case 0x1F: //RRA
-			A = ((A>>1)&0x7) | 
-					 ((A&0x1) <<7);
+			set_c(A&(1<<7));
+			A = (A>>1) & c;
+			reset_z();
+			reset_n();
+			reset_h();
 		break;
 
 		case 0xC3: //JMP b16
@@ -158,7 +192,14 @@ void gb::cycle()
 		break;
 
 		case 0x32: //LD (HL-), A-;
-			mem[HL--] = (A); 
+			mem[HL] = A; 
+			printf("(HL): %X\n", mem[HL]);
+			HL--;
+			A--;
+		break;
+
+		case 0x77: //LD (HL), A
+			mem[HL] = A; 
 			printf("(HL): %X\n", mem[HL]);
 			A--;
 		break;
@@ -168,12 +209,13 @@ void gb::cycle()
 		break;
 
 		case 0x89: //ADC A, C
+			F |= carry(A,C);
+
 			A += C + flag_c();
 			
-			F |= ((Z)==0)&1		<<7;
+			F |= ((A)==0)&1		<<7;
 			F |= F&0x40			<<6;
-			F |= ((Z)==0xF)&1 	<<5; 
-			F |= ((((A&0xF + C&0xF)0xF0)>>4)>0)<<4; 		
+			F |= ((A)==0xF)&1 	<<5; 
 		break;
 
 		case 0xAF: //XOR A

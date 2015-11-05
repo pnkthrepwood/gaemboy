@@ -69,4 +69,11 @@ struct gb
 	bool flag_n();
 	bool flag_h();
 	bool flag_c();
+
+	void reset_z();
+	void reset_n();
+	void reset_h();
+	void reset_c();
+
+	void set_c(byte b);
 };
