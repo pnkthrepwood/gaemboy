@@ -75,5 +75,8 @@ struct gb
 	void reset_h();
 	void reset_c();
 
+	void set_z(byte b);
 	void set_c(byte b);
+	void set_h(byte b);
+	void set_n(byte b);
 };

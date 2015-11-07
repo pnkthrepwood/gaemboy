@@ -6,6 +6,8 @@
 #include "gb.h"
 #include "datatype.h"
 
+#include "memotech.h"
+
 void wrong_opcode(byte op)
 {
 	printf("!!! Puto opcode esta puto mal: 0x%X\n", op);
@@ -17,9 +19,21 @@ byte carry(byte A, byte B)
 	((((A&0xF + B&0xF)&0xF0)>>4)>0)<<4; 	
 }
 
-void gb::set_c(byte b){
+void gb::set_z(byte b){
 	reset_z();
-	if (b) F &= (b<<4);
+	if (b) F |= (b<<6);
+}
+void gb::set_n(byte b){
+	reset_n();
+	if (b) F |= (b<<6);
+}
+void gb::set_c(byte b){
+	reset_c();
+	if (b) F |= (b<<4);
+}
+void gb::set_h(byte b){
+	reset_h();
+	if (b) F |= (b<<5);
 }
 
 void gb::reset_z(){ F &= 0x80;}
@@ -61,6 +75,10 @@ void gb::cycle()
 	//Debug stuff
 	printf("\n> Executing instruction: 0x%X", opcode);
 	printf("\tat location 0x%X\n", pc);
+
+	printf("\t%s\n", memo(opcode));
+
+	printf("---- ---- ---- ----\n", memo(opcode));
 
 	printf("AF: %X\t", AF);
 	printf("Z N H C: %X %X %X %X\n", 
@@ -112,8 +130,11 @@ void gb::cycle()
 			(BC)++;
 		break;
 
-		case 0x04:
-			//BC = (((BC)>>8)+1) << 8 | BC & 0x0F;
+		case 0x04: //INC B
+			set_h(B == 0xF);
+			B++;
+			set_z(B == 0);
+			reset_n();
 		break;
 
 		case 0x05: //DEC B
