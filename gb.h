@@ -2,7 +2,7 @@
 
 #include "datatype.h"
 
-#define MEM_SIZE 0xFFFF +1
+#define MEM_SIZE 0xFFFF +8
 
 #define SCR_H 32
 #define SCR_W 64

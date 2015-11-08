@@ -23,28 +23,23 @@ byte carry_sum(byte A, byte B)
 	((((A&0x00FF + B&0x00FF)&0xF00)>>8)>0); 	
 }
 
-void gb::set_z(byte b){
-	printf("\nZ..F: %X\n", F);
-	printf("z) b:%X\tb<<3: %X\n",b,b<<7);
+void gb::set_z(byte b)
+{
 	reset_z();
 	F = F|(b<<7);
-	printf("F: %X\n", F);
 }
-void gb::set_n(byte b){
-	printf("\nN..F: %X\n", F);
-	printf("z) b:%X\tb<<2: %X\n",b,b<<6);
+void gb::set_n(byte b)
+{
 	reset_n();
 	F = F|(b<<6);
-	printf("F: %X\n", F);
 }
-void gb::set_h(byte b){
-	printf("H..F: %X\n", F);
-	printf("h) b:%X\tb<<1: %X\n",b,b<<5);
+void gb::set_h(byte b)
+{
 	reset_h();
 	F = F|(b<<5);
-	printf("F: %X\n", F);
 }
-void gb::set_c(byte b){
+void gb::set_c(byte b)
+{
 	reset_c();
 	F = F|(b<<4);
 }
@@ -54,13 +49,14 @@ void gb::reset_n(){ F &= 0xB0;}
 void gb::reset_h(){ F &= 0xD0;}
 void gb::reset_c(){ F &= 0xE0;}
 
-bool gb::flag_z(){ return (F)&0x80; }
-bool gb::flag_n(){ return (F)&0x40; }
-bool gb::flag_h(){ return (F)&0x20; }
-bool gb::flag_c(){ return (F)&0x10; }
+bool gb::flag_z(){ return (F)&0x80;}
+bool gb::flag_n(){ return (F)&0x40;}
+bool gb::flag_h(){ return (F)&0x20;}
+bool gb::flag_c(){ return (F)&0x10;}
 
 void gb::init()
 {
+	printf("> Cleaning %i bytes of memory...\n", MEM_SIZE);
 	memset(mem, 0, MEM_SIZE);
 
 	pc = 0x100;
@@ -75,6 +71,7 @@ void gb::load(char* rom_name)
 	long size = ftell(rom);
 	fseek(rom, 0L, SEEK_SET);
 
+	printf("> Loading rom with size %li\n", size);
 	fread(mem, size, 1, rom);
 
 	fclose(rom);
@@ -91,7 +88,7 @@ void gb::cycle()
 
 	printf("\t%s\n", memo(opcode));
 
-	printf("---- ---- ---- ----\n", memo(opcode));
+	printf("---- ---- ---- ----\n");
 
 	printf("AF: %X\t", AF);
 	printf("Z N H C: %X %X %X %X\t", 
@@ -104,7 +101,7 @@ void gb::cycle()
 	printf("BC: %X\n", BC);
 	printf("DE: %X\n", DE);
 
-	for (int i = -10, j = 0; i <= 10; i +=1, j++)
+	for (int i = -5, j = 0; i <= 5; i +=1, j++)
 	{
 		if (pc+i < 0) continue;
 
@@ -125,7 +122,6 @@ void gb::cycle()
 	printf("n1:%X\tn2:%X\tnnnn:%X\n",n1,n2,nnnn);
 
 	pc++;
-
 
 	byte aux_carry = 0;
 	switch (opcode)
