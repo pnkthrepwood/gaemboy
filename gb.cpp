@@ -165,6 +165,18 @@ void gb::cycle()
 			pc++;
 		break;
 
+		case 0x07: //RLCA
+			reset_h();
+			reset_n();
+			set_c(A>>7);
+			A = (A<<1) | ((A>>7)&1);
+		break;
+
+		case 0x0F: //RRCA
+			set_c(A&1);
+			A = ((A&1)<<7) | (A>>1);	
+		break;
+
 		case 0x0D: //DEC C
 			C--;
 			F |= (C)&1==0 	<<7;
@@ -217,6 +229,10 @@ void gb::cycle()
 			pc += n1;
 		break;
 
+		case 0x1B: //DEC DE
+			DE--;
+		break;
+
 		case 0x1E: //LD E, d8
 			E = n1;
 			pc++;
@@ -257,6 +273,18 @@ void gb::cycle()
 			pc++;
 		break;
 
+		case 0x60: //LD H, B
+			H = B;
+		break;
+
+		case 0x61: //LD H, C
+			H = C;
+		break;
+
+		case 0x73: //LD (HL), E
+			mem[HL] = E;
+		break;
+
 		case 0x77: //LD (HL), A
 			mem[HL] = A; 
 			printf("(HL): %X\n", mem[HL]);
@@ -265,6 +293,14 @@ void gb::cycle()
 
 		case 0x7A: //LD A, D
 			A = D;
+		break;
+
+		case 0x80: //ADD A, B
+			set_h(half_carry_sum(A,B));
+			set_c(carry_sum(A,B));
+			A = A+B;
+			set_z(A==0);
+			set_n(0);
 		break;
 
 		case 0x89: //ADC A, C
@@ -277,8 +313,32 @@ void gb::cycle()
 			
 		break;
 
+		case 0x90: //SUB B
+			set_h(half_carry_sum(A, -B));
+			set_c(carry_sum(A, -B));
+			A -= B;
+			set_z(A==0);
+			set_n(1);
+		break;
+
+		case 0x92: //SUB D
+			set_h(half_carry_sum(A, -D));
+			set_c(carry_sum(A, -D));
+			A -= D;
+			set_z(A==0);
+			set_n(1);
+		break;
+
 		case 0xAF: //XOR A
 			A = A^A; 
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+
+		case 0xB7: //OR A
+			A = A|A; 
 			reset_n();
 			reset_h();
 			reset_c();
@@ -288,9 +348,22 @@ void gb::cycle()
 		case 0xC3: //JMP b16
 			pc = nnnn;
 		break;
-		
+	
+		case 0xDA: //JP C, a16
+			if (flag_c()) pc = nnnn;
+		break;
+	
 		case 0xDF: //RST 18H
+			wrong_opcode(opcode);
 			pc = mem[0x18];	
+		break;
+
+		case 0xE0: //LDH (a8), A
+			mem[0xFF00+n1] = A;
+		break;
+
+		case 0xE3: //LD (C), A
+			mem[0xFF00+C] = A;
 		break;
 
 		case 0xE9: //JP (HL)
@@ -303,8 +376,16 @@ void gb::cycle()
 			pc++;
 		break;
 		
+		case 0xF0: //LDH A, (a8)
+			A = mem[0xFF00+n1];
+		break;
+		
 		case 0xF9: //ld sp, hl
 			sp = HL;
+		break;
+
+		case 0xF3: //LD A, (C)
+			A = mem[0xFF00+C];
 		break;
 
 		case 0xFE: //CP d8
@@ -315,7 +396,8 @@ void gb::cycle()
 		break;
 
 		case 0xFF: //RST 38h
-			pc = mem[0x38];
+			mem[--sp] = pc;
+			pc = 0x3800;
 		break;
 
 		default:

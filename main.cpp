@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 	shape.setFillColor(sf::Color::White);
 
 	cpu.init();
-	if (argc == 1) 
+	if (argc >= 1) 
 	{
 		if (strcmp(argv[1], "-d") == 0) cpu.dbg_mode = true;
 	}
