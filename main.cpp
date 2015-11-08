@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 	//char gamepath[6+strlen(argv[2])+1];
 	//strcpy(gamepath, "gaems/");
 	//strcat(gamepath, argv[2]);
-	cpu.load("tetris.gb");
+	cpu.load("blue.gb");
 
 	while(1)
 	{
