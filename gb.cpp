@@ -14,43 +14,56 @@ void wrong_opcode(byte op)
 	exit(0);
 }
 
-byte carry(byte A, byte B)
+byte half_carry_sum(byte A, byte B)
 {
-	((((A&0xF + B&0xF)&0xF0)>>4)>0)<<4; 	
+	((((A&0xF + B&0xF)&0xF0)>>4)>0); 	
+}
+byte carry_sum(byte A, byte B)
+{
+	((((A&0x00FF + B&0x00FF)&0xF00)>>8)>0); 	
 }
 
 void gb::set_z(byte b){
+	printf("\nZ..F: %X\n", F);
+	printf("z) b:%X\tb<<3: %X\n",b,b<<7);
 	reset_z();
-	if (b) F |= (b<<6);
+	F = F|(b<<7);
+	printf("F: %X\n", F);
 }
 void gb::set_n(byte b){
+	printf("\nN..F: %X\n", F);
+	printf("z) b:%X\tb<<2: %X\n",b,b<<6);
 	reset_n();
-	if (b) F |= (b<<6);
+	F = F|(b<<6);
+	printf("F: %X\n", F);
+}
+void gb::set_h(byte b){
+	printf("H..F: %X\n", F);
+	printf("h) b:%X\tb<<1: %X\n",b,b<<5);
+	reset_h();
+	F = F|(b<<5);
+	printf("F: %X\n", F);
 }
 void gb::set_c(byte b){
 	reset_c();
-	if (b) F |= (b<<4);
-}
-void gb::set_h(byte b){
-	reset_h();
-	if (b) F |= (b<<5);
+	F = F|(b<<4);
 }
 
-void gb::reset_z(){ F &= 0x80;}
-void gb::reset_n(){ F &= 0x40;}
-void gb::reset_h(){ F &= 0x20;}
-void gb::reset_c(){ F &= 0x10;}
+void gb::reset_z(){ F &= 0x70;}
+void gb::reset_n(){ F &= 0xB0;}
+void gb::reset_h(){ F &= 0xD0;}
+void gb::reset_c(){ F &= 0xE0;}
 
-bool gb::flag_z(){ return (F>>7)&1; }
-bool gb::flag_n(){ return (F>>6)&1; }
-bool gb::flag_h(){ return (F>>5)&1; }
-bool gb::flag_c(){ return (F>>4)&1; }
+bool gb::flag_z(){ return (F)&0x80; }
+bool gb::flag_n(){ return (F)&0x40; }
+bool gb::flag_h(){ return (F)&0x20; }
+bool gb::flag_c(){ return (F)&0x10; }
 
 void gb::init()
 {
 	memset(mem, 0, MEM_SIZE);
 
-	pc = 0;
+	pc = 0x100;
 
 	dbg_mode = false;
 }
@@ -82,11 +95,9 @@ void gb::cycle()
 
 	printf("AF: %X\t", AF);
 	printf("Z N H C: %X %X %X %X\n", 
-			(F & (1<<7)) >> 7,
-			(F & (1<<6)) >> 6,
-			(F & (1<<5)) >> 5,
-			(F & (1<<4)) >> 4
-			);
+			flag_z(), flag_n(),
+			flag_h(), flag_c());
+
 	printf("HL: %X\n", HL);
 	printf("BC: %X\n", BC);
 	printf("DE: %X\n", DE);
@@ -101,8 +112,8 @@ void gb::cycle()
 	}
 	printf("...\n");
 
-	char c;
-	if (dbg_mode) std::cin >> c;
+	char dbg_key_cont;
+	if (dbg_mode) std::cin >> dbg_key_cont;
 
 	//Opcode stuff
 	byte n1 = mem[pc+1];
@@ -113,6 +124,8 @@ void gb::cycle()
 
 	pc++;
 
+
+	byte aux_carry = 0;
 	switch (opcode)
 	{
 		case 0x00: //NOP
@@ -131,17 +144,17 @@ void gb::cycle()
 		break;
 
 		case 0x04: //INC B
-			set_h(B == 0xF);
+			set_h((B&0xF) == 0);
 			B++;
 			set_z(B == 0);
 			reset_n();
 		break;
 
 		case 0x05: //DEC B
+			set_h((B&0xF)==0);
 			B--;
-			F |= (B == 0)&1 	<<7;
-			F |= 1 				<<6;
-			F |= (B ==0xF)&1 	<<5; //??
+			set_n(1);
+			set_z(B==0);
 		break;
 
 		case 0x06: //LD B, d8
@@ -161,9 +174,18 @@ void gb::cycle()
 			pc++;
 		break;
 
+		case 0x14: //INC D
+			set_n(0);
+			set_h((D&0xF)==0xF);
+			D++;
+			set_z(D==0);
+		break;
+
 		case 0x15: //DEC D
-			E = n1;
-			pc++;
+			set_n(1);
+			set_h((D&0xF)==0);
+			D--;
+			set_z(D==0);
 		break;
 
 		case 0x16: //LD D, d8
@@ -172,8 +194,10 @@ void gb::cycle()
 		break;		
 
 		case 0x17: //RLA
-			c = A&(1<<7);
-			A = (A<<1);
+			aux_carry = A&0x80;
+			A = (A << 1) & (flag_c());
+			set_c(aux_carry);
+
 			reset_z();
 			reset_n();
 			reset_h();
@@ -189,16 +213,15 @@ void gb::cycle()
 		break;
 
 		case 0x1F: //RRA
-			set_c(A&(1<<7));
-			A = (A>>1) & c;
+			aux_carry = A&1;
+			A = (A>>1) & (flag_c()<<7);
+			set_c(aux_carry);
+
 			reset_z();
 			reset_n();
 			reset_h();
 		break;
 
-		case 0xC3: //JMP b16
-			pc = nnnn;
-		break;
 	
 		case 0x20:
 			if (flag_z()) break;
@@ -230,21 +253,37 @@ void gb::cycle()
 		break;
 
 		case 0x89: //ADC A, C
-			F |= carry(A,C);
+			reset_n();
 
+			set_h(half_carry_sum(C, flag_c()));
+			set_c(carry_sum(C, flag_c()));
 			A += C + flag_c();
+			set_z(A==0);
 			
-			F |= ((A)==0)&1		<<7;
-			F |= F&0x40			<<6;
-			F |= ((A)==0xF)&1 	<<5; 
 		break;
 
 		case 0xAF: //XOR A
-			A = 0; 
+			A = A^A; 
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+
+		case 0xC3: //JMP b16
+			pc = nnnn;
+		break;
+		
+		case 0xDF: //RST 18H
+			pc = mem[0x18];	
 		break;
 		
 		case 0xF9: //ld sp, hl
 			sp = HL;
+		break;
+
+		case 0xFF: //RST 38h
+			pc = mem[0x38];
 		break;
 
 		default:
