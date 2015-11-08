@@ -128,148 +128,121 @@ void gb::cycle()
 	{
 		case 0x00: //NOP
 		break;	
-
 		case 0x01: //LD BC, nnnn
 			BC = nnnn;	
 			pc++;
 		break;
-
 		case 0x02: //LD (BC), A
 			mem[BC] = (AF) >> 8;
 		break;
-
 		case 0x03: //INC BC
 			(BC)++;
 		break;
-
 		case 0x04: //INC B
 			set_h((B&0xF) == 0);
 			B++;
 			set_z(B == 0);
 			reset_n();
 		break;
-
 		case 0x05: //DEC B
 			set_h((B&0xF)==0);
 			B--;
 			set_n(1);
 			set_z(B==0);
 		break;
-
 		case 0x06: //LD B, d8
 			B = n1;
 			pc++;
 		break;
-
 		case 0x07: //RLCA
 			reset_h();
 			reset_n();
 			set_c(A>>7);
 			A = (A<<1) | ((A>>7)&1);
 		break;
-
-		case 0x0F: //RRCA
-			set_c(A&1);
-			A = ((A&1)<<7) | (A>>1);	
-		break;
-
 		case 0x0D: //DEC C
 			C--;
 			F |= (C)&1==0 	<<7;
 			F |= 1 			<<6;
 			F |= (C)==0xF 	<<5; //??	
 		break;
-
 		case 0x0E: //LD C, d8
 			C = n1;
 			pc++;
 		break;
-
+		case 0x0F: //RRCA
+			set_c(A&1);
+			A = ((A&1)<<7) | (A>>1);	
+		break;
+//case 0x1
 		case 0x11: //LD DE, d16
 			DE = nnnn;
 			pc++;
 			pc++;
 		break;
-
 		case 0x14: //INC D
 			set_n(0);
 			set_h((D&0xF)==0xF);
 			D++;
 			set_z(D==0);
 		break;
-
 		case 0x15: //DEC D
 			set_n(1);
 			set_h((D&0xF)==0);
 			D--;
 			set_z(D==0);
 		break;
-
 		case 0x16: //LD D, d8
 			D = n1;
 			pc++;
 		break;		
-
 		case 0x17: //RLA
 			aux_carry = A&0x80;
 			A = (A << 1) & (flag_c());
 			set_c(aux_carry);
-
 			reset_z();
 			reset_n();
 			reset_h();
 		break;
-
 		case 0x18: //JR, r8
 			pc--;
 			pc += n1;
 		break;
-
 		case 0x1A: //LD A, (DE)
 			A = mem[DE];
 		break;
-
 		case 0x1B: //DEC DE
 			DE--;
 		break;
-
 		case 0x1E: //LD E, d8
 			E = n1;
 			pc++;
 		break;
-
 		case 0x1F: //RRA
 			aux_carry = A&1;
 			A = (A>>1) & (flag_c()<<7);
 			set_c(aux_carry);
-
 			reset_z();
 			reset_n();
 			reset_h();
 		break;
-
-	
+//0x2
 		case 0x20: //JR NZ, r8
 			if (flag_z()) break;
 			pc--;
 			pc += n1; 
 		break;	
-	
 		case 0x21: //LD HL, d16
 			HL = nnnn;
 			pc++;
 			pc++;
 		break;
-
-
 		case 0x22: //LD (HL+), A
 			mem[HL++] = A;
 		break;
-
 		case 0x28: //JR Z, r8
 			if (flag_z()) pc += n1-1;
 		break;
-
 //0x3X
 		case 0x32: //LD (HL-), A-;
 			mem[HL] = A; 
@@ -277,19 +250,16 @@ void gb::cycle()
 			HL--;
 			A--;
 		break;
-
 		case 0x35: //DEC (HL)
 			mem[HL]--;
 			set_z(mem[HL]==0);
 			set_n(1);
 			set_h((mem[HL]&0xF)==0xF);
 		break;
-
 		case 0x3E: //LD A, d8
 			A = n1;
 			pc++;
 		break;
-
 //0x4X
 		case 0x40: //LD B, B
 			B = B;
@@ -301,7 +271,6 @@ void gb::cycle()
 		case 0x60: //LD H, B
 			H = B;
 		break;
-
 		case 0x61: //LD H, C
 			H = C;
 		break;
@@ -309,17 +278,14 @@ void gb::cycle()
 		case 0x73: //LD (HL), E
 			mem[HL] = E;
 		break;
-
 		case 0x7E: //LD A, (HL)
 			A = mem[HL];
 		break;
-
 		case 0x77: //LD (HL), A
 			mem[HL] = A; 
 			printf("(HL): %X\n", mem[HL]);
 			A--;
 		break;
-
 		case 0x7A: //LD A, D
 			A = D;
 		break;
@@ -383,7 +349,6 @@ void gb::cycle()
 			set_h(1);
 			set_c(0);
 		break;
-
 		case 0xAF: //XOR A
 			A = A^A; 
 			reset_n();
@@ -391,13 +356,11 @@ void gb::cycle()
 			reset_c();
 			set_z(A==0);
 		break;
-
 //0xBX
 		case 0xB3: //OR D
 			A = A | D;
 			set_z(A==0);
 		break;
-
 		case 0xB7: //OR A
 			A = A|A; 
 			reset_n();
@@ -409,11 +372,9 @@ void gb::cycle()
 		case 0xC3: //JMP b16
 			pc = nnnn;
 		break;
-	
 		case 0xC5: //PUSH BC
 			mem[--sp] = BC;
 		break;
-
 		case 0xCD: //CALL a16
 			mem[--sp] = pc+2;
 			pc = nnnn;
@@ -422,42 +383,34 @@ void gb::cycle()
 		case 0xDA: //JP C, a16
 			if (flag_c()) pc = nnnn;
 		break;
-
 		case 0xD7: //RST 10H
 			mem[--sp] = pc;
 			pc = (A<<4)|0x10;
 		break;
-	
 		case 0xDF: //RST 18H
 			mem[--sp] = pc;
 			pc = (A<<4)|0x18;
 		break;
-
 //0xEX
 		case 0xE0: //LDH (a8), A
 			mem[0xFF00+n1] = A;
 			pc++;
 		break;
-
 		case 0xE3: //LD (C), A
 			mem[0xFF00+C] = A;
 		break;
-
 		case 0xE9: //JP (HL)
 			pc = mem[HL];
 		break;
-	
 		case 0xEA: //LD (a16), A
 			mem[nnnn] = A;
 			pc++;
 			pc++;
 		break;
-		
 		case 0xEF: //RST 28h
 			mem[--sp] = pc;
 			pc = (A<<4)|0x28;	
 		break;
-
 //0xFX
 		case 0xF0: //LDH A, (a8)
 			A = mem[0xFF00+n1];
