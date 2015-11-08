@@ -225,6 +225,10 @@ void gb::cycle()
 			pc += n1;
 		break;
 
+		case 0x1A: //LD A, (DE)
+			A = mem[DE];
+		break;
+
 		case 0x1B: //DEC DE
 			DE--;
 		break;
@@ -245,7 +249,7 @@ void gb::cycle()
 		break;
 
 	
-		case 0x20:
+		case 0x20: //JR NZ, r8
 			if (flag_z()) break;
 			pc--;
 			pc += n1; 
@@ -257,6 +261,16 @@ void gb::cycle()
 			pc++;
 		break;
 
+
+		case 0x22: //LD (HL+), A
+			mem[HL++] = A;
+		break;
+
+		case 0x28: //JR Z, r8
+			if (flag_z()) pc += n1-1;
+		break;
+
+//0x3X
 		case 0x32: //LD (HL-), A-;
 			mem[HL] = A; 
 			printf("(HL): %X\n", mem[HL]);
@@ -264,11 +278,26 @@ void gb::cycle()
 			A--;
 		break;
 
+		case 0x35: //DEC (HL)
+			mem[HL]--;
+			set_z(mem[HL]==0);
+			set_n(1);
+			set_h((mem[HL]&0xF)==0xF);
+		break;
+
 		case 0x3E: //LD A, d8
 			A = n1;
 			pc++;
 		break;
 
+//0x4X
+		case 0x40: //LD B, B
+			B = B;
+		break;
+		case 0x44: //LD B, H
+			B = H;
+		break;
+//0x6X
 		case 0x60: //LD H, B
 			H = B;
 		break;
@@ -276,9 +305,13 @@ void gb::cycle()
 		case 0x61: //LD H, C
 			H = C;
 		break;
-
+//0x7X
 		case 0x73: //LD (HL), E
 			mem[HL] = E;
+		break;
+
+		case 0x7E: //LD A, (HL)
+			A = mem[HL];
 		break;
 
 		case 0x77: //LD (HL), A
@@ -290,7 +323,7 @@ void gb::cycle()
 		case 0x7A: //LD A, D
 			A = D;
 		break;
-
+//0x8X
 		case 0x80: //ADD A, B
 			set_h(half_carry_sum(A,B));
 			set_c(carry_sum(A,B));
@@ -298,17 +331,21 @@ void gb::cycle()
 			set_z(A==0);
 			set_n(0);
 		break;
-
+		case 0x85: //ADC A, L
+			reset_n();
+			set_h(half_carry_sum(L, flag_c()));
+			set_c(carry_sum(L, flag_c()));
+			A += L + flag_c();
+			set_z(A==0);
+		break;
 		case 0x89: //ADC A, C
 			reset_n();
-
 			set_h(half_carry_sum(C, flag_c()));
 			set_c(carry_sum(C, flag_c()));
 			A += C + flag_c();
 			set_z(A==0);
-			
 		break;
-
+//0x9X
 		case 0x90: //SUB B
 			set_h(half_carry_sum(A, -B));
 			set_c(carry_sum(A, -B));
@@ -316,13 +353,35 @@ void gb::cycle()
 			set_z(A==0);
 			set_n(1);
 		break;
-
 		case 0x92: //SUB D
 			set_h(half_carry_sum(A, -D));
 			set_c(carry_sum(A, -D));
 			A -= D;
 			set_z(A==0);
 			set_n(1);
+		break;
+		case 0x93: //SUB E
+			set_h(half_carry_sum(A, -E));
+			set_c(carry_sum(A, -E));
+			A -= E;
+			set_z(A==0);
+			set_n(1);
+		break;
+		case 0x94: //SUB H
+			set_h(half_carry_sum(A, -H));
+			set_c(carry_sum(A, -H));
+			A -= H;
+			set_z(A==0);
+			set_n(1);
+		break;
+
+//0xAX
+		case 0xA7: //AND A
+			A = A&A;
+			set_z(A==0);
+			set_n(0);
+			set_h(1);
+			set_c(0);
 		break;
 
 		case 0xAF: //XOR A
@@ -333,6 +392,12 @@ void gb::cycle()
 			set_z(A==0);
 		break;
 
+//0xBX
+		case 0xB3: //OR D
+			A = A | D;
+			set_z(A==0);
+		break;
+
 		case 0xB7: //OR A
 			A = A|A; 
 			reset_n();
@@ -340,22 +405,38 @@ void gb::cycle()
 			reset_c();
 			set_z(A==0);
 		break;
-
+//0xCX
 		case 0xC3: //JMP b16
 			pc = nnnn;
 		break;
 	
+		case 0xC5: //PUSH BC
+			mem[--sp] = BC;
+		break;
+
+		case 0xCD: //CALL a16
+			mem[--sp] = pc+2;
+			pc = nnnn;
+		break;
+//0xDX
 		case 0xDA: //JP C, a16
 			if (flag_c()) pc = nnnn;
 		break;
+
+		case 0xD7: //RST 10H
+			mem[--sp] = pc;
+			pc = (A<<4)|0x10;
+		break;
 	
 		case 0xDF: //RST 18H
-			wrong_opcode(opcode);
-			pc = mem[0x18];	
+			mem[--sp] = pc;
+			pc = (A<<4)|0x18;
 		break;
 
+//0xEX
 		case 0xE0: //LDH (a8), A
 			mem[0xFF00+n1] = A;
+			pc++;
 		break;
 
 		case 0xE3: //LD (C), A
@@ -372,30 +453,43 @@ void gb::cycle()
 			pc++;
 		break;
 		
+		case 0xEF: //RST 28h
+			mem[--sp] = pc;
+			pc = (A<<4)|0x28;	
+		break;
+
+//0xFX
 		case 0xF0: //LDH A, (a8)
 			A = mem[0xFF00+n1];
 		break;
-		
-		case 0xF9: //ld sp, hl
-			sp = HL;
-		break;
-
 		case 0xF3: //LD A, (C)
 			A = mem[0xFF00+C];
 		break;
-
+		case 0xF9: //ld sp, hl
+			sp = HL;
+		break;
+		case 0xFA: //LD A, (a16)
+			A = nnnn;
+			pc += 2;
+		break;
+		case 0xFB: //EI
+			wrong_opcode(opcode);
+		break;
 		case 0xFE: //CP d8
 			set_z(A==n1);
 			set_n(1);
 			set_h(0);
 			set_c(A<n1);
 		break;
-
+		case 0xFD: //wrong
+			wrong_opcode(opcode);
+		break;
 		case 0xFF: //RST 38h
 			mem[--sp] = pc;
-			pc = 0x3800;
+			pc = (A<<4)|0x38;
 		break;
 
+//
 		default:
 				wrong_opcode(opcode);
 	}
