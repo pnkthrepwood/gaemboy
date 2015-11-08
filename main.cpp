@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 	shape.setFillColor(sf::Color::White);
 
 	cpu.init();
-	if (argc > 1) 
+	if (argc == 1) 
 	{
 		if (strcmp(argv[1], "-d") == 0) cpu.dbg_mode = true;
 	}
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 	//char gamepath[6+strlen(argv[2])+1];
 	//strcpy(gamepath, "gaems/");
 	//strcat(gamepath, argv[2]);
-	cpu.load("blue.gb");
+	cpu.load("mario.gb");
 
 	while(1)
 	{

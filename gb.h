@@ -2,7 +2,7 @@
 
 #include "datatype.h"
 
-#define MEM_SIZE 65536
+#define MEM_SIZE 0xFFFF +1
 
 #define SCR_H 32
 #define SCR_W 64
@@ -79,4 +79,5 @@ struct gb
 	void set_c(byte b);
 	void set_h(byte b);
 	void set_n(byte b);
+
 };

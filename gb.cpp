@@ -94,9 +94,11 @@ void gb::cycle()
 	printf("---- ---- ---- ----\n", memo(opcode));
 
 	printf("AF: %X\t", AF);
-	printf("Z N H C: %X %X %X %X\n", 
+	printf("Z N H C: %X %X %X %X\t", 
 			flag_z(), flag_n(),
 			flag_h(), flag_c());
+	printf("sp: %X\t", sp);
+	printf("pc: %X\n", pc);
 
 	printf("HL: %X\n", HL);
 	printf("BC: %X\n", BC);
@@ -133,6 +135,7 @@ void gb::cycle()
 
 		case 0x01: //LD BC, nnnn
 			BC = nnnn;	
+			pc++;
 		break;
 
 		case 0x02: //LD (BC), A
@@ -174,6 +177,12 @@ void gb::cycle()
 			pc++;
 		break;
 
+		case 0x11: //LD DE, d16
+			DE = nnnn;
+			pc++;
+			pc++;
+		break;
+
 		case 0x14: //INC D
 			set_n(0);
 			set_h((D&0xF)==0xF);
@@ -203,8 +212,9 @@ void gb::cycle()
 			reset_h();
 		break;
 
-		case 0x19:
-			
+		case 0x18: //JR, r8
+			pc--;
+			pc += n1;
 		break;
 
 		case 0x1E: //LD E, d8
@@ -242,6 +252,11 @@ void gb::cycle()
 			A--;
 		break;
 
+		case 0x3E: //LD A, d8
+			A = n1;
+			pc++;
+		break;
+
 		case 0x77: //LD (HL), A
 			mem[HL] = A; 
 			printf("(HL): %X\n", mem[HL]);
@@ -277,9 +292,26 @@ void gb::cycle()
 		case 0xDF: //RST 18H
 			pc = mem[0x18];	
 		break;
+
+		case 0xE9: //JP (HL)
+			pc = mem[HL];
+		break;
+	
+		case 0xEA: //LD (a16), A
+			mem[nnnn] = A;
+			pc++;
+			pc++;
+		break;
 		
 		case 0xF9: //ld sp, hl
 			sp = HL;
+		break;
+
+		case 0xFE: //CP d8
+			set_z(A==n1);
+			set_n(1);
+			set_h(0);
+			set_c(A<n1);
 		break;
 
 		case 0xFF: //RST 38h
