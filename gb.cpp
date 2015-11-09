@@ -355,8 +355,53 @@ void gb::cycle()
 			C = A;
 		break;
 //0x5x
+		case 0x50: //LD D, B
+			D = B;
+		break;
+		case 0x51: //LD D, C
+			D = C;
+		break;
+		case 0x52: //LD D, D
+			D = D;
+		break;
+		case 0x53: //LD D, E
+			D = E;
+		break;
+		case 0x54: //LD D, H
+			D = H;
+		break;
 		case 0x55: //LD D, L
 			D = L;
+		break;
+		case 0x56: //LD D, (HL)
+			D = mem[HL];
+		break;
+		case 0x57: //LD D, A
+			D = A;
+		break;
+		case 0x58: //LD E, B
+			E = B;
+		break;
+		case 0x59: //LD E, C
+			E = C;
+		break;
+		case 0x5A: //LD E, D
+			E = D;
+		break;
+		case 0x5B: //LD E, E
+			E = E;
+		break;
+		case 0x5C: //LD E, H
+			E = H;
+		break;
+		case 0x5D: //LD E, L
+			E = L;
+		break;
+		case 0x5E: //LD E, (HL)
+			E = mem[HL];
+		break;
+		case 0x5F: //LD E, A
+			E = A;
 		break;
 //0x6X
 		case 0x60: //LD H, B
@@ -364,6 +409,48 @@ void gb::cycle()
 		break;
 		case 0x61: //LD H, C
 			H = C;
+		break;
+		case 0x62: //LD H, D
+			H = D;
+		break;
+		case 0x63: //LD H, E
+			H = E;
+		break;
+		case 0x64: //LD H, H
+			H = H;
+		break;
+		case 0x65: //LD H, L
+			H = L;
+		break;
+		case 0x66: //LD H, (HL)
+			H = mem[HL];
+		break;
+		case 0x67: //LD H, A
+			H = A;
+		break;
+		case 0x68: //LD L, B
+			L = B;
+		break;
+		case 0x69: //LD L, C
+			L = C;
+		break;
+		case 0x6A: //LD L, D
+			L = D;
+		break;
+		case 0x6B: //LD L, E
+			L = E;
+		break;
+		case 0x6C: //LD L, H
+			L = H;
+		break;
+		case 0x6D: //LD L, L
+			L = L;
+		break;
+		case 0x6E: //LD L, (HL)
+			L = mem[HL];
+		break;
+		case 0x6F: //LD L, A
+			L = A;
 		break;
 //0x7X
 		case 0x70: //LD (HL), B
@@ -389,8 +476,6 @@ void gb::cycle()
 		break;
 		case 0x77: //LD (HL), A
 			mem[HL] = A; 
-			printf("(HL): %X\n", mem[HL]);
-			A--;
 		break;
 		case 0x78: //LD A, B
 			A = B;
@@ -467,14 +552,134 @@ void gb::cycle()
 			set_z(A==0);
 			set_n(1);
 		break;
+		case 0x95: //SUB L
+			set_h(half_carry_sum(A, -L));
+			set_c(carry_sum(A, -L));
+			A -= L;
+			set_z(A==0);
+			set_n(1);
+		break;
+		case 0x96: //SUB HL
+			set_h(half_carry_sum(A, -mem[HL]));
+			set_c(carry_sum(A, -mem[HL]));
+			A -= mem[HL];
+			set_z(A==0);
+			set_n(1);
+		break;
+		case 0x97: //SUB A
+			set_h(half_carry_sum(A, -A));
+			set_c(carry_sum(A, -A));
+			A -= A;
+			set_z(A==0);
+			set_n(1);
+		break;
+		
 
 //0xAX
+		case 0xA0: //AND B
+			A = A&B;
+			set_z(A==0);
+			set_n(0);
+			set_h(1);
+			set_c(0);
+		break;
+		case 0xA1: //AND C
+			A = A&C;
+			set_z(A==0);
+			set_n(0);
+			set_h(1);
+			set_c(0);
+		break;
+		case 0xA2: //AND D
+			A = A&D;
+			set_z(A==0);
+			set_n(0);
+			set_h(1);
+			set_c(0);
+		break;
+		case 0xA3: //AND E
+			A = A&E;
+			set_z(A==0);
+			set_n(0);
+			set_h(1);
+			set_c(0);
+		break;
+		case 0xA4: //AND H
+			A = A&H;
+			set_z(A==0);
+			set_n(0);
+			set_h(1);
+			set_c(0);
+		break;
+		case 0xA5: //AND L
+			A = A&L;
+			set_z(A==0);
+			set_n(0);
+			set_h(1);
+			set_c(0);
+		break;
+		case 0xA6: //AND (HL)
+			A = A&mem[HL];
+			set_z(A==0);
+			set_n(0);
+			set_h(1);
+			set_c(0);
+		break;
 		case 0xA7: //AND A
 			A = A&A;
 			set_z(A==0);
 			set_n(0);
 			set_h(1);
 			set_c(0);
+		break;
+		case 0xA8: //XOR B
+			A = A^B; 
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xA9: //XOR C
+			A = A^C; 
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xAA: //XOR D
+			A = A^D; 
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xAB: //XOR E
+			A = A^E; 
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xAC: //XOR H
+			A = A^H; 
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xAD: //XOR L
+			A = A^L; 
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xAE: //XOR HL
+			A = A^mem[HL]; 
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
 		break;
 		case 0xAF: //XOR A
 			A = A^A; 
@@ -484,8 +689,53 @@ void gb::cycle()
 			set_z(A==0);
 		break;
 //0xBX
-		case 0xB3: //OR D
+		case 0xB0: //OR B
+			A = A | B;
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xB1: //OR C
+			A = A | C;
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xB2: //OR D
 			A = A | D;
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xB3: //OR E
+			A = A | E;
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xB4: //OR H
+			A = A | H;
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xB5: //OR L
+			A = A | L;
+			reset_n();
+			reset_h();
+			reset_c();
+			set_z(A==0);
+		break;
+		case 0xB6: //OR (HL)
+			A = A | mem[HL];
+			reset_n();
+			reset_h();
+			reset_c();
 			set_z(A==0);
 		break;
 		case 0xB7: //OR A
@@ -538,6 +788,13 @@ void gb::cycle()
 			mem[nnnn] = A;
 			pc++;
 			pc++;
+		break;
+		case 0xEE: //XOR d8
+			A = A^n1;
+			set_z(A==0);
+			reset_n();
+			reset_c();
+			reset_h();
 		break;
 		case 0xEF: //RST 28h
 			mem[--sp] = ((pc&0xFF00)>>8)&0xFF;
