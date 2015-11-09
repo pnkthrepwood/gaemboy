@@ -51,13 +51,12 @@ struct gb
 		dbyte HL;
 	};
 
-	dbyte I;
-	dbyte R;
-
 	dbyte sp;	
 	dbyte pc;	
 
 	byte opcode;
+	
+	bool ime_enable;
 
 	void init();
 	void load(char* rom_name);

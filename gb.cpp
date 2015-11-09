@@ -61,6 +61,7 @@ void gb::init()
 
 	pc = 0x100;
 
+	ime_enable = false;
 	dbg_mode = false;
 }
 
@@ -111,8 +112,11 @@ void gb::cycle()
 	}
 	printf("...\n");
 
-	char dbg_key_cont;
-	if (dbg_mode) std::cin >> dbg_key_cont;
+	if (dbg_mode) 
+	{
+		char dbg_key_cont;
+		std::cin >> dbg_key_cont;
+	}
 
 	//Opcode stuff
 	byte n1 = mem[pc+1];
@@ -180,6 +184,9 @@ void gb::cycle()
 			pc++;
 			pc++;
 		break;
+		case 0x12: //LD (DE), A
+			mem[DE] = A;
+		break;
 		case 0x14: //INC D
 			set_n(0);
 			set_h((D&0xF)==0xF);
@@ -242,6 +249,7 @@ void gb::cycle()
 		break;
 		case 0x28: //JR Z, r8
 			if (flag_z()) pc += n1-1;
+			else pc++;
 		break;
 //0x3X
 		case 0x32: //LD (HL-), A-;
@@ -250,11 +258,24 @@ void gb::cycle()
 			HL--;
 			A--;
 		break;
+		case 0x33: //INC SP	
+			sp++;	
+		break;
+		case 0x34: //INC HL
+			set_h(half_carry_sum(HL, 1));
+			HL++;
+			set_z(HL==0);
+			set_n(0);
+		break;
 		case 0x35: //DEC (HL)
 			mem[HL]--;
 			set_z(mem[HL]==0);
 			set_n(1);
 			set_h((mem[HL]&0xF)==0xF);
+		break;
+		case 0x36: //LD (HL), d8
+			mem[HL] = n1;
+			pc++;
 		break;
 		case 0x3E: //LD A, d8
 			A = n1;
@@ -278,9 +299,6 @@ void gb::cycle()
 		case 0x73: //LD (HL), E
 			mem[HL] = E;
 		break;
-		case 0x7E: //LD A, (HL)
-			A = mem[HL];
-		break;
 		case 0x77: //LD (HL), A
 			mem[HL] = A; 
 			printf("(HL): %X\n", mem[HL]);
@@ -288,6 +306,9 @@ void gb::cycle()
 		break;
 		case 0x7A: //LD A, D
 			A = D;
+		break;
+		case 0x7E: //LD A, (HL)
+			A = mem[HL];
 		break;
 //0x8X
 		case 0x80: //ADD A, B
@@ -369,6 +390,11 @@ void gb::cycle()
 			set_z(A==0);
 		break;
 //0xCX
+		case 0xC0: //RET NZ
+			if (flag_z()) break;
+			pc = (mem[sp+1]<<8) | mem[sp];
+			sp+=2;
+		break;
 		case 0xC3: //JMP b16
 			pc = nnnn;
 		break;
@@ -408,15 +434,32 @@ void gb::cycle()
 			pc++;
 		break;
 		case 0xEF: //RST 28h
-			mem[--sp] = pc;
-			pc = (A<<4)|0x28;	
+			mem[--sp] = ((pc&0xFF00)>>8)&0xFF;
+			mem[--sp] = pc&0xFF;
+			pc = 0x0028;
 		break;
 //0xFX
 		case 0xF0: //LDH A, (a8)
 			A = mem[0xFF00+n1];
+			pc++;
 		break;
-		case 0xF3: //LD A, (C)
+		case 0xF2: //LD A, (C)
 			A = mem[0xFF00+C];
+		break;
+		case 0xF3: //DI
+			ime_enable = false;
+		break;
+		case 0xF4: //wrong
+			wrong_opcode(opcode);
+		break;
+		case 0xF5: //PUSH AF
+			mem[--sp] = A;
+			mem[--sp] = F;
+		break;
+		case 0xF7: //RST 30h
+			mem[--sp] = ((pc&0xFF00)>>8)&0xFF;
+			mem[--sp] = pc&0xFF;
+			pc = 0x0030;
 		break;
 		case 0xF9: //ld sp, hl
 			sp = HL;
@@ -426,20 +469,22 @@ void gb::cycle()
 			pc += 2;
 		break;
 		case 0xFB: //EI
-			wrong_opcode(opcode);
+			ime_enable = true;
 		break;
 		case 0xFE: //CP d8
 			set_z(A==n1);
 			set_n(1);
 			set_h(0);
 			set_c(A<n1);
+			pc++;
 		break;
 		case 0xFD: //wrong
 			wrong_opcode(opcode);
 		break;
 		case 0xFF: //RST 38h
-			mem[--sp] = pc;
-			pc = (A<<4)|0x38;
+			mem[--sp] = ((pc&0xFF00)>>8)&0xFF;
+			mem[--sp] = pc&0xFF;
+			pc = 0x0038;
 		break;
 
 //
