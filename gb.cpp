@@ -130,11 +130,12 @@ void gb::cycle()
 	byte aux_carry = 0;
 	switch (opcode)
 	{
+//0x0
 		case 0x00: //NOP
 		break;	
 		case 0x01: //LD BC, nnnn
 			BC = nnnn;	
-			pc++;
+			pc+=2;
 		break;
 		case 0x02: //LD (BC), A
 			mem[BC] = (AF) >> 8;
@@ -164,6 +165,10 @@ void gb::cycle()
 			set_c(A>>7);
 			A = (A<<1) | ((A>>7)&1);
 		break;
+		case 0x08: //LD (a16), SP
+			sp = mem[nnnn];	
+			pc+=2;
+		break;
 		case 0x0D: //DEC C
 			C--;
 			F |= (C)&1==0 	<<7;
@@ -178,14 +183,20 @@ void gb::cycle()
 			set_c(A&1);
 			A = ((A&1)<<7) | (A>>1);	
 		break;
-//case 0x1
+//0x1
+		case 0x10: //STOP 0
+			printf("STOP 0");
+			exit(EXIT_SUCCESS);
+		break;
 		case 0x11: //LD DE, d16
 			DE = nnnn;
-			pc++;
-			pc++;
+			pc+=2;
 		break;
 		case 0x12: //LD (DE), A
 			mem[DE] = A;
+		break;
+		case 0x13: //INC DE	
+			DE++;
 		break;
 		case 0x14: //INC D
 			set_n(0);
@@ -241,17 +252,30 @@ void gb::cycle()
 		break;	
 		case 0x21: //LD HL, d16
 			HL = nnnn;
-			pc++;
-			pc++;
+			pc+=2;
 		break;
 		case 0x22: //LD (HL+), A
 			mem[HL++] = A;
+		break;
+		case 0x25: //DEC H
+			set_h(half_carry_sum(H, -1));
+			H--;
+			set_z(H==0);
+			set_n(1);
 		break;
 		case 0x28: //JR Z, r8
 			if (flag_z()) pc += n1-1;
 			else pc++;
 		break;
 //0x3X
+		case 0x30: //JR NC, r8
+			if (!flag_c()) pc = n1-1;
+			else pc++;
+		break;
+		case 0x31: //LD SP, d16
+			sp = nnnn;
+			pc += 2;
+		break;
 		case 0x32: //LD (HL-), A-;
 			mem[HL] = A; 
 			printf("(HL): %X\n", mem[HL]);
@@ -285,8 +309,54 @@ void gb::cycle()
 		case 0x40: //LD B, B
 			B = B;
 		break;
+		case 0x41: //LD B, C
+			B = C;
+		break;
+		case 0x42: //LD B, D
+			B = D;
+		break;
+		case 0x43: //LD B, E
+			B = E;
+		break;
 		case 0x44: //LD B, H
 			B = H;
+		break;
+		case 0x45: //LD B, L
+			B = L;
+		break;
+		case 0x46: //LD B, (HL)
+			B = mem[HL];
+		break;
+		case 0x47: //LD B, A
+			B = A;
+		break;
+		case 0x48: //LD C, B
+			C = B;
+		break;
+		case 0x49: //LD C, C
+			C = C;
+		break;
+		case 0x4A: //LD C, D
+			C = D;
+		break;
+		case 0x4B: //LD C, E
+			C = E;
+		break;
+		case 0x4C: //LD C, H
+			C = H;
+		break;
+		case 0x4D: //LD C, L
+			C = L;
+		break;
+		case 0x4E: //LD C, (HL)
+			C = mem[HL];
+		break;
+		case 0x4F: //LD C, A
+			C = A;
+		break;
+//0x5x
+		case 0x55: //LD D, L
+			D = L;
 		break;
 //0x6X
 		case 0x60: //LD H, B
@@ -296,19 +366,55 @@ void gb::cycle()
 			H = C;
 		break;
 //0x7X
+		case 0x70: //LD (HL), B
+			mem[HL] = B;
+		break;
+		case 0x71: //LD (HL), C
+			mem[HL] = C;
+		break;
+		case 0x72: //LD (HL), D
+			mem[HL] = D;
+		break;
 		case 0x73: //LD (HL), E
 			mem[HL] = E;
+		break;
+		case 0x74: //LD (HL), H
+			mem[HL] = H;
+		break;
+		case 0x75: //LD (HL), L
+			mem[HL] = L;
+		break;
+		case 0x76: //HALT
+			wrong_opcode(opcode); //to-do
 		break;
 		case 0x77: //LD (HL), A
 			mem[HL] = A; 
 			printf("(HL): %X\n", mem[HL]);
 			A--;
 		break;
+		case 0x78: //LD A, B
+			A = B;
+		break;
+		case 0x79: //LD A, C
+			A = C;
+		break;
 		case 0x7A: //LD A, D
 			A = D;
 		break;
+		case 0x7B: //LD A, E
+			A = E;
+		break;
+		case 0x7C: //LD A, H
+			A = H;
+		break;
+		case 0x7D: //LD A, L
+			A = L;
+		break;
 		case 0x7E: //LD A, (HL)
 			A = mem[HL];
+		break;
+		case 0x7F: //LD A, A
+			A = A;
 		break;
 //0x8X
 		case 0x80: //ADD A, B
