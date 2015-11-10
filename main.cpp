@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 
  	sf::RenderWindow window(sf::VideoMode(SCR_W*10, 
 										  SCR_H*10), 
-							"z80 \t--pnkThrepwood");
+							"gaemboy. HYPER ALPHA VERSION v0.001a");
 
 	sf::RectangleShape shape;
 	shape.setSize(sf::Vector2f(10, 10));
