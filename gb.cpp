@@ -59,7 +59,16 @@ void gb::init()
 	printf("> Cleaning %i bytes of memory...\n", MEM_SIZE);
 	memset(mem, 0, MEM_SIZE);
 
+	A = 0x01;
+	F = 0xB0;
+	C = 0x01;
+	B = 0x00;
+	D = 0x00;
+	E = 0xD8;
+	HL = 0x014D;
+
 	pc = 0x100;
+	sp = 0xFFFE;	
 
 	ime_enable = false;
 	dbg_mode = false;
@@ -224,13 +233,19 @@ void gb::cycle()
 		break;
 		case 0x18: //JR, r8
 			pc--;
-			pc += n1;
+			pc += (char)n1;
 		break;
 		case 0x1A: //LD A, (DE)
 			A = mem[DE];
 		break;
 		case 0x1B: //DEC DE
 			DE--;
+		break;
+		case 0x1C: //INC E
+			set_h((E&0xF) == 0);
+			E++;
+			set_z(E == 0);
+			reset_n();
 		break;
 		case 0x1E: //LD E, d8
 			E = n1;
@@ -248,7 +263,7 @@ void gb::cycle()
 		case 0x20: //JR NZ, r8
 			if (flag_z()) break;
 			pc--;
-			pc += n1; 
+			pc += (char)n1; 
 		break;	
 		case 0x21: //LD HL, d16
 			HL = nnnn;
@@ -264,8 +279,17 @@ void gb::cycle()
 			set_n(1);
 		break;
 		case 0x28: //JR Z, r8
-			if (flag_z()) pc += n1-1;
+			if (flag_z()) pc += (char)n1  -1;
 			else pc++;
+		break;
+		case 0x2A: //LD A, (HL+)
+			A = mem[HL++];
+		break;
+		case 0x2C: //INC E
+			set_h((E&0xF) == 0);
+			E++;
+			set_z(E == 0);
+			reset_n();
 		break;
 //0x3X
 		case 0x30: //JR NC, r8
@@ -277,18 +301,16 @@ void gb::cycle()
 			pc += 2;
 		break;
 		case 0x32: //LD (HL-), A-;
-			mem[HL] = A; 
-			printf("(HL): %X\n", mem[HL]);
-			HL--;
+			mem[HL--] = A; 
 			A--;
 		break;
 		case 0x33: //INC SP	
 			sp++;	
 		break;
-		case 0x34: //INC HL
-			set_h(half_carry_sum(HL, 1));
-			HL++;
-			set_z(HL==0);
+		case 0x34: //INC (HL)
+			set_h(half_carry_sum(mem[HL], 1));
+			mem[HL]++;
+			set_z(mem[HL]==0);
 			set_n(0);
 		break;
 		case 0x35: //DEC (HL)
@@ -780,6 +802,14 @@ void gb::cycle()
 		break;
 		case 0xE3: //LD (C), A
 			mem[0xFF00+C] = A;
+		break;
+		case 0xE6: //AND d8
+			set_n(0);
+			set_h(1);
+			set_c(0);
+			A = A^n1;
+			set_z(A==0);
+			pc++;
 		break;
 		case 0xE9: //JP (HL)
 			pc = mem[HL];
