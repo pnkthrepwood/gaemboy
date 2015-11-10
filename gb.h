@@ -2,7 +2,7 @@
 
 #include "datatype.h"
 
-#define MEM_SIZE 0xFFFF +8
+#define MEM_SIZE 0xFFFF +1
 
 #define SCR_H 32
 #define SCR_W 64
@@ -10,10 +10,10 @@
 
 struct gb
 {
-	//Memory
+//Memory
 	byte mem[MEM_SIZE];
 
-	//Registers
+//Registers
 	union
 	{
 		struct
@@ -55,15 +55,19 @@ struct gb
 	dbyte pc;	
 
 	byte opcode;
-	
-	bool ime_enable;
 
+	bool ime_flag;
+
+//CPU
 	void init();
 	void load(char* rom_name);
 	void cycle();
+	void exec_instr();
 
 	bool dbg_mode;
+	void dbg_fetch();
 
+//Helpers
 	bool flag_z();
 	bool flag_n();
 	bool flag_h();

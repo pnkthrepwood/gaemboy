@@ -61,7 +61,7 @@ void gb::init()
 
 	A = 0x01;
 	F = 0xB0;
-	C = 0x01;
+	C = 0x13;
 	B = 0x00;
 	D = 0x00;
 	E = 0xD8;
@@ -70,7 +70,6 @@ void gb::init()
 	pc = 0x100;
 	sp = 0xFFFE;	
 
-	ime_enable = false;
 	dbg_mode = false;
 }
 
@@ -81,7 +80,9 @@ void gb::load(char* rom_name)
 	long size = ftell(rom);
 	fseek(rom, 0L, SEEK_SET);
 
-	printf("> Loading rom with size %li\n", size);
+	if (dbg_mode)
+		printf("> Loading rom with size %li\n", size);
+
 	fread(mem, size, 1, rom);
 
 	fclose(rom);
@@ -89,8 +90,18 @@ void gb::load(char* rom_name)
 
 void gb::cycle()
 {
-	//Read opcode
+	//Fetch
 	opcode = mem[pc];
+	if (dbg_mode) dbg_fetch();
+
+	//Execute
+	exec_instr();
+}
+
+// ---- ---- HERE BE DRAGONS! 
+
+void gb::dbg_fetch()
+{
 
 	//Debug stuff
 	printf("\n> Executing instruction: 0x%X", opcode);
@@ -100,16 +111,20 @@ void gb::cycle()
 
 	printf("---- ---- ---- ----\n");
 
-	printf("AF: %X\t", AF);
-	printf("Z N H C: %X %X %X %X\t", 
+	printf("A: %X\t", A);
+	printf("Z N H C\t\t"); 
+	printf("sp: %X\n", sp);
+
+	printf("BC: %X\t", BC);
+	printf("%X %X %X %X\t", 
 			flag_z(), flag_n(),
 			flag_h(), flag_c());
-	printf("sp: %X\t", sp);
-	printf("pc: %X\n", pc);
+	printf("\tpc: %X\n", pc);
 
+	printf("DE: %X\t\t\t", DE);
+	printf("ime: %d\tIF:%X IE:%X \n", 
+			ime_flag, mem[0xFF0F]&0x1F, mem[0xFFFF]&0x1F);
 	printf("HL: %X\n", HL);
-	printf("BC: %X\n", BC);
-	printf("DE: %X\n", DE);
 
 	for (int i = -5, j = 0; i <= 5; i +=1, j++)
 	{
@@ -126,13 +141,14 @@ void gb::cycle()
 		char dbg_key_cont;
 		std::cin >> dbg_key_cont;
 	}
+}
 
+void gb::exec_instr()
+{
 	//Opcode stuff
 	byte n1 = mem[pc+1];
 	byte n2 = mem[pc+2];
 	dbyte nnnn = (n2 << 8) | n1; 
-
-	printf("n1:%X\tn2:%X\tnnnn:%X\n",n1,n2,nnnn);
 
 	pc++;
 
@@ -840,7 +856,8 @@ void gb::cycle()
 			A = mem[0xFF00+C];
 		break;
 		case 0xF3: //DI
-			ime_enable = false;
+			//mem[0xFFFF] = 0x00;
+			ime_flag = false;
 		break;
 		case 0xF4: //wrong
 			wrong_opcode(opcode);
@@ -862,7 +879,8 @@ void gb::cycle()
 			pc += 2;
 		break;
 		case 0xFB: //EI
-			ime_enable = true;
+			//mem[0xFFFF] = 0xFF;
+			ime_flag = true;
 		break;
 		case 0xFE: //CP d8
 			set_z(A==n1);

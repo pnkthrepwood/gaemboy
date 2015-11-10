@@ -158,6 +158,10 @@ const char* memo(byte b)
 			return "JP NZ, a16";
 		break;
 
+		case 0xE0:
+			return "LD [0xFFnn], A";
+		break;
+
 		default:
 			return "????";
 		break;
