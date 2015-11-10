@@ -54,6 +54,35 @@ bool gb::flag_n(){ return (F)&0x40;}
 bool gb::flag_h(){ return (F)&0x20;}
 bool gb::flag_c(){ return (F)&0x10;}
 
+void gb::req_int(byte I)
+{
+	switch(I)
+	{
+		case 0: //VBlank
+			mem[0xFF0F] |= 1;
+		break;
+		
+		case 1: //LCD
+			mem[0xFF0F] |= 2;
+		break;
+		
+		case 2: //Timer
+			mem[0xFF0F] |= 4;
+		break;
+
+		case 3: //Serial
+			mem[0xFF0F] |= 8;
+		break;
+		
+		case 4: //Joypad
+			mem[0xFF0F] |= 16;
+		break;
+
+		default:
+		break;
+	}
+}
+
 void gb::init()
 {
 	printf("> Cleaning %i bytes of memory...\n", MEM_SIZE);
@@ -86,6 +115,33 @@ void gb::load(char* rom_name)
 	fread(mem, size, 1, rom);
 
 	fclose(rom);
+}
+
+void gb::check_interrupts()
+{
+	//Interrupt?
+	byte IF = mem[0xFF0F]; //Request
+	byte IF_v = IF&1; //VBlank
+	byte IF_l = IF&2; //LCD
+	byte IF_t = IF&4; //Timer
+	byte IF_s = IF&8; //Serial
+	byte IF_j = IF&16; //Joypad
+
+	byte IE = mem[0xFFFF]; //Enable
+	byte IE_v = IE&1; //VBlank
+	byte IE_l = IE&2; //LCD
+	byte IE_t = IE&4; //Timer
+	byte IE_s = IE&8; //Serial
+	byte IE_j = IE&16; //Joypad
+
+	if (IF_v && IE && ime_flag) 
+	{
+		mem[0xFF0F] &= 0xFE;
+		ime_flag = false;
+		mem[--sp] = (pc>>8)&0xFF;
+		mem[--sp] = pc&0xFF;
+		pc = 0x40;
+	}		
 }
 
 void gb::cycle()

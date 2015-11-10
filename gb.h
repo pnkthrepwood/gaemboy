@@ -4,8 +4,8 @@
 
 #define MEM_SIZE 0xFFFF +1
 
-#define SCR_H 32
-#define SCR_W 64
+#define SCR_H 144
+#define SCR_W 160
 #define SCR_SIZE SCR_H*SCR_W
 
 struct gb
@@ -63,6 +63,9 @@ struct gb
 	void load(char* rom_name);
 	void cycle();
 	void exec_instr();
+	void check_interrupts();	
+
+	void req_int(byte I);
 
 	bool dbg_mode;
 	void dbg_fetch();
@@ -83,4 +86,5 @@ struct gb
 	void set_h(byte b);
 	void set_n(byte b);
 
+	
 };
