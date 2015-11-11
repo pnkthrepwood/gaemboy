@@ -61,6 +61,6 @@ int main(int argc, char** argv)
 		}
 		window.display();
 
-//		cpu.req_int(0);
+		cpu.req_int(0);
 	}		
 }
