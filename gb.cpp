@@ -172,6 +172,38 @@ void gb::check_interrupts()
 		mem[--sp] = pc&0xFF;
 		pc = 0x40;
 	}		
+	if (IF_l && IE && ime_flag) 
+	{
+		mem[0xFF0F] &= 0xFD;
+		ime_flag = false;
+		mem[--sp] = (pc>>8)&0xFF;
+		mem[--sp] = pc&0xFF;
+		pc = 0x48;
+	}		
+	if (IF_t && IE && ime_flag) 
+	{
+		mem[0xFF0F] &= 0xFB;
+		ime_flag = false;
+		mem[--sp] = (pc>>8)&0xFF;
+		mem[--sp] = pc&0xFF;
+		pc = 0x50;
+	}		
+	if (IF_s && IE && ime_flag) 
+	{
+		mem[0xFF0F] &= 0xF7;
+		ime_flag = false;
+		mem[--sp] = (pc>>8)&0xFF;
+		mem[--sp] = pc&0xFF;
+		pc = 0x58;
+	}		
+	if (IF_j && IE && ime_flag) 
+	{
+		mem[0xFF0F] &= 0xEF;
+		ime_flag = false;
+		mem[--sp] = (pc>>8)&0xFF;
+		mem[--sp] = pc&0xFF;
+		pc = 0x60;
+	}		
 }
 
 void gb::cycle()
