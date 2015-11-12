@@ -116,10 +116,10 @@ void gb::init()
 	mem[0xFF24] = 0x77; //NR50
 	mem[0xFF25] = 0xF3; //NR51
 	mem[0xFF26] = 0xF1; //NR52
-	mem[0xFF40] = 0x91; //LCDC
+	mem[0xFF40] = 0x91; //LCDC --STAT
 	mem[0xFF42] = 0x00; //SCY
 	mem[0xFF43] = 0x00; //SCX
-	mem[0xFF44] = 0x00; //LCD-Scanline
+	mem[0xFF44] = 0x00; //LCDS --Scanline
 	mem[0xFF45] = 0x00; //LYC
 	mem[0xFF47] = 0xFC; //BGP
 	mem[0xFF48] = 0xFF; //OBP0
@@ -264,7 +264,7 @@ void gb::dbg_fetch()
 	}
 	printf("...\n");
 
-	if (dbg_mode) 
+	if (dbg_stepby) 
 	{
 		char dbg_key_cont;
 		std::cin >> dbg_key_cont;

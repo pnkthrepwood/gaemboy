@@ -31,7 +31,14 @@ int main(int argc, char** argv)
 	cpu.init();
 	if (argc > 1) 
 	{
-		if (strcmp(argv[1], "-d") == 0) cpu.dbg_mode = true;
+		if (strcmp(argv[1], "-d") == 0) 
+			cpu.dbg_mode = true;
+		if (strcmp(argv[1], "-dl") == 0) {
+			cpu.dbg_mode = true;
+			cpu.dbg_stepby = true;
+		}
+		if (strcmp(argv[1], "-l") == 0) 
+			cpu.dbg_stepby = true;
 	}
 
 	//char* rom = argv[2];
@@ -40,15 +47,19 @@ int main(int argc, char** argv)
 	//strcat(gamepath, argv[2]);
 	cpu.load("mario.gb");
 
-	sf::Clock clock;
-	sf::Time dt;
+	//sf::Clock clock;
+	//sf::Time dt;
 	unsigned char ff = 0;
 	
-	clock.restart();
+	//clock.restart();
 	while(1)
 	{
 	//	updateInput();
 		cpu.cycle();
+
+		if (!cpu.lcd_draw_flag) continue;
+
+		cpu.lcd_draw_flag = false;
 
 		for (int y = 0; y < SCR_H; ++y)
 		{

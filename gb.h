@@ -74,6 +74,7 @@ struct gb
 	void req_int(byte I);
 
 	bool dbg_mode;
+	bool dbg_stepby;
 	void dbg_fetch();
 
 //LCD

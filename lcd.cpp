@@ -37,7 +37,7 @@ void gb::lcd_update()
 			}
 		break;
 		
-		case 1: //HBlank
+		case 0: //HBlank
 			if (lcd_mode_clk >= 204)
 			{
 				lcd_mode_clk = 0;
@@ -55,7 +55,7 @@ void gb::lcd_update()
 			}
 		break;
 	
-		case 0: //VBlank
+		case 1: //VBlank
 			if (lcd_mode_clk >= 456)
 			{
 				lcd_mode_clk = 0;
