@@ -58,6 +58,9 @@ struct gb
 
 	bool ime_flag;
 
+	int clk_t;
+	int clk_m;
+
 //CPU
 	void init();
 	void load(char* rom_name);
@@ -69,6 +72,11 @@ struct gb
 
 	bool dbg_mode;
 	void dbg_fetch();
+
+//LCD
+	void lcd_mode(byte mode);
+		
+	int lcd_mode_clk;
 
 //Helpers
 	bool flag_z();

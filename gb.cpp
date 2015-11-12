@@ -7,6 +7,8 @@
 #include "datatype.h"
 
 #include "memotech.h"
+#include "op_cycles.h";
+extern int op_cycles[];
 
 void wrong_opcode(byte op)
 {
@@ -16,11 +18,11 @@ void wrong_opcode(byte op)
 
 byte half_carry_sum(byte A, byte B)
 {
-	((((A&0xF + B&0xF)&0xF0)>>4)>0); 	
+	return ((((A&0xF + B&0xF)&0xF0)>>4)>0); 	
 }
 byte carry_sum(byte A, byte B)
 {
-	((((A&0x00FF + B&0x00FF)&0xF00)>>8)>0); 	
+	return ((((A&0x00FF + B&0x00FF)&0xF00)>>8)>0); 	
 }
 
 void gb::set_z(byte b)
@@ -77,9 +79,6 @@ void gb::req_int(byte I)
 		case 4: //Joypad
 			mem[0xFF0F] |= 16;
 		break;
-
-		default:
-		break;
 	}
 }
 
@@ -128,6 +127,8 @@ void gb::init()
 	mem[0xFF4B] = 0x00; //WX
 	mem[0xFFFF] = 0x00; //IE
 
+	clk_t = 0;
+	clk_m = 0;
 
 	dbg_mode = false;
 }
@@ -214,6 +215,8 @@ void gb::cycle()
 
 	//Execute
 	exec_instr();
+	clk_t += op_cycles[opcode];
+
 	check_interrupts();
 }
 
@@ -224,9 +227,9 @@ void gb::dbg_fetch()
 
 	//Debug stuff
 	printf("\n> Executing instruction: 0x%X", opcode);
-	printf("\tat location 0x%X\n", pc);
+	printf(" @ 0x%X\n", pc);
 
-	printf("\t%s\n", memo(opcode));
+	printf("\t%s\nCYCLES:%i\n", memo(opcode), op_cycles[opcode]);
 
 	printf("---- ---- ---- ----\n");
 

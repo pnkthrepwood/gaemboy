@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 		{
 			for (int x = 0; x < SCR_W; ++x)
 			{	 
-				shape.setFillColor(sf::Color(ff-x,ff-y,ff++));
+				shape.setFillColor(sf::Color(ff-x,ff-y,ff++,255));
 				shape.setPosition(x*PIXEL_SIZE,y*PIXEL_SIZE);
 				window.draw(shape);
 			}
