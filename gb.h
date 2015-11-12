@@ -80,7 +80,7 @@ struct gb
 	void lcd_setmode(byte mode);
 	void lcd_update();	
 	int lcd_mode_clk;
-	int lcd_scanline;
+	//byte lcd_scanline; 0xFF44
 	bool lcd_draw_flag;
 
 //Helpers

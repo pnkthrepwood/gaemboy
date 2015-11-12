@@ -119,6 +119,7 @@ void gb::init()
 	mem[0xFF40] = 0x91; //LCDC
 	mem[0xFF42] = 0x00; //SCY
 	mem[0xFF43] = 0x00; //SCX
+	mem[0xFF44] = 0x00; //LCD-Scanline
 	mem[0xFF45] = 0x00; //LYC
 	mem[0xFF47] = 0xFC; //BGP
 	mem[0xFF48] = 0xFF; //OBP0
@@ -130,7 +131,6 @@ void gb::init()
 	clk_t = 0;
 	clk_m = 0;
 
-	lcd_scanline = 0;
 	lcd_mode_clk = 0;
 
 	dbg_mode = false;

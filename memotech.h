@@ -153,6 +153,13 @@ const char* memo(byte b)
 
 
 
+		case 0x3E:
+			return "LD A, d8";
+		break;
+
+		case 0xAF:
+			return "XOR A";
+		break;
 
 		case 0xC3:
 			return "JP NZ, a16";
@@ -160,6 +167,14 @@ const char* memo(byte b)
 
 		case 0xE0:
 			return "LD [0xFFnn], A";
+		break;
+
+		case 0xF0:
+			return "LD A, [0xFFnn]";
+		break;
+
+		case 0xF3:
+			return "DI";
 		break;
 
 		default:

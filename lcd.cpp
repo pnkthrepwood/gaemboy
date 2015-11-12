@@ -1,14 +1,24 @@
 #include "gb.h"
 
+#include <stdio.h>
+
 void gb::lcd_setmode(byte mode)
 {
-	mem[0xFF41] |= mode;
+	mem[0xFF41] = (mem[0xFF41]&0xFC)|mode;
 }
 
 void gb::lcd_update()
 {
 	lcd_mode_clk += last_t;
 	
+	byte* lcd_scanline = &mem[0xFF44];
+
+	if (dbg_mode) 
+	{
+		printf("\nscanzor %i\n", (*lcd_scanline));
+		printf("mode %X\tclock %i\n", mem[0xFF41]&3, lcd_mode_clk);
+	}
+
 	switch(mem[0xFF41]&3) //STAT
 	{
 		case 2: //OAM read
@@ -31,9 +41,9 @@ void gb::lcd_update()
 			if (lcd_mode_clk >= 204)
 			{
 				lcd_mode_clk = 0;
-				lcd_scanline++;
+				(*lcd_scanline)++;
 
-				if (lcd_scanline == 143)
+				if ((*lcd_scanline) == 143)
 				{
 					lcd_setmode(1);
 					lcd_draw_flag = true;
@@ -49,12 +59,12 @@ void gb::lcd_update()
 			if (lcd_mode_clk >= 456)
 			{
 				lcd_mode_clk = 0;
-				lcd_scanline++;
+				(*lcd_scanline)++;
 			
-				if (lcd_scanline > 153)
+				if ((*lcd_scanline) > 153)
 				{
 					lcd_setmode(2);
-					lcd_scanline = 0;
+					(*lcd_scanline) = 0;
 				}
 
 				lcd_setmode(3);
