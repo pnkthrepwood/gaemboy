@@ -61,6 +61,9 @@ struct gb
 	int clk_t;
 	int clk_m;
 
+	int last_t;
+	int last_m;
+
 //CPU
 	void init();
 	void load(char* rom_name);
@@ -74,9 +77,11 @@ struct gb
 	void dbg_fetch();
 
 //LCD
-	void lcd_mode(byte mode);
-		
+	void lcd_setmode(byte mode);
+	void lcd_update();	
 	int lcd_mode_clk;
+	int lcd_scanline;
+	bool lcd_draw_flag;
 
 //Helpers
 	bool flag_z();

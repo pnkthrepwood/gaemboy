@@ -7,7 +7,7 @@
 #include "datatype.h"
 
 #include "memotech.h"
-#include "op_cycles.h";
+#include "op_cycles.h"
 extern int op_cycles[];
 
 void wrong_opcode(byte op)
@@ -130,6 +130,9 @@ void gb::init()
 	clk_t = 0;
 	clk_m = 0;
 
+	lcd_scanline = 0;
+	lcd_mode_clk = 0;
+
 	dbg_mode = false;
 }
 
@@ -215,7 +218,10 @@ void gb::cycle()
 
 	//Execute
 	exec_instr();
-	clk_t += op_cycles[opcode];
+	last_t = op_cycles[opcode];
+	clk_t += last_t;
+
+	lcd_update();
 
 	check_interrupts();
 }
@@ -227,9 +233,8 @@ void gb::dbg_fetch()
 
 	//Debug stuff
 	printf("\n> Executing instruction: 0x%X", opcode);
-	printf(" @ 0x%X\n", pc);
-
-	printf("\t%s\nCYCLES:%i\n", memo(opcode), op_cycles[opcode]);
+	printf(" @ 0x%X\t", pc);
+	printf("%s\tT:%i\n", memo(opcode), op_cycles[opcode]);
 
 	printf("---- ---- ---- ----\n");
 
@@ -254,7 +259,8 @@ void gb::dbg_fetch()
 
 		byte m = (mem[pc+i]);
 		if (i == 0) printf("->");
-		printf("\t0x%X: %x\n", pc+i, m);
+		printf("\t0x%X: %x\t", pc+i, m);
+		printf("%s\n", memo(mem[pc+i]));
 	}
 	printf("...\n");
 
