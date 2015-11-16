@@ -13,6 +13,10 @@ void gb::lcd_update()
 	
 	byte* lcd_scanline = &mem[0xFF44];
 
+	//STAT, Bit 6: LYC ?= LY 
+	mem[0xFF41] &= 0xBF;
+	if (mem[0xFF44]==mem[0xFF45]) mem[0xFF41] |= 0x40;
+
 	if (dbg_mode) 
 	{
 		printf("\nscanzor %i\n", (*lcd_scanline));

@@ -70,6 +70,7 @@ struct gb
 	void cycle();
 	void exec_instr();
 	void check_interrupts();	
+	void timers_update();
 
 	void req_int(byte I);
 
