@@ -4,8 +4,8 @@
 
 #define MEM_SIZE 0xFFFF +1
 
-#define SCR_H 144
 #define SCR_W 160
+#define SCR_H 144
 #define SCR_SIZE SCR_H*SCR_W
 
 struct gb

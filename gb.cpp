@@ -92,7 +92,7 @@ void gb::init()
 	DE = 0x00D8;
 	HL = 0x014D;
 
-	pc = 0x100;
+	pc = 0x0100;
 	sp = 0xFFFE;	
 
 	mem[0xFF05] = 0x00; //TIMA
@@ -117,16 +117,16 @@ void gb::init()
 	mem[0xFF25] = 0xF3; //NR51
 	mem[0xFF26] = 0xF1; //NR52
 	mem[0xFF40] = 0x91; //LCDC --STAT
-	mem[0xFF42] = 0x00; //SCY
-	mem[0xFF43] = 0x00; //SCX
+	mem[0xFF42] = 0x00; //SCY --Scroll Y
+	mem[0xFF43] = 0x00; //SCX --Scroll X
 	mem[0xFF44] = 0x00; //LCDS --Scanline
-	mem[0xFF45] = 0x00; //LYC
+	mem[0xFF45] = 0x00; //LYC --LY Compare
 	mem[0xFF47] = 0xFC; //BGP
 	mem[0xFF48] = 0xFF; //OBP0
 	mem[0xFF49] = 0xFF; //OBP1
-	mem[0xFF4A] = 0x00; //WY
-	mem[0xFF4B] = 0x00; //WX
-	mem[0xFFFF] = 0x00; //IE
+	mem[0xFF4A] = 0x00; //WY --Window Y
+	mem[0xFF4B] = 0x00; //WX --Window X
+	mem[0xFFFF] = 0x00; //IE --Interrupt Enable
 
 	clk_t = 0;
 	clk_m = 0;
@@ -405,9 +405,8 @@ void gb::exec_instr()
 		break;
 //0x2
 		case 0x20: //JR NZ, r8
-			if (flag_z()) break;
-			pc--;
-			pc += (char)n1; 
+			if (!flag_z()) pc += (char)n1;
+			pc++;
 		break;	
 		case 0x21: //LD HL, d16
 			HL = nnnn;

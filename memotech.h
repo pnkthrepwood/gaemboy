@@ -177,6 +177,10 @@ const char* memo(byte b)
 			return "DI";
 		break;
 
+		case 0xFE:
+			return "CP d8";
+		break;
+
 		default:
 			return "????";
 		break;
