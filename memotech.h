@@ -153,6 +153,10 @@ const char* memo(byte b)
 
 
 
+		case 0x32:
+			return "LD (HL-), A";
+		break;
+
 		case 0x3E:
 			return "LD A, d8";
 		break;
@@ -167,6 +171,10 @@ const char* memo(byte b)
 
 		case 0xE0:
 			return "LD [0xFFnn], A";
+		break;
+
+		case 0xE2:
+			return "LD (C), A";
 		break;
 
 		case 0xF0:

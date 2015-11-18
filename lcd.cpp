@@ -98,6 +98,9 @@ void gb::lcd_update()
 					printf("%d",(mem[0xFF40]>>(7-i))&1);
 				char cc;
 				std::cin >> cc;
+				if (cc == ',') {
+					dbg_mode = dbg_stepby = true;
+				}
 	
 				if ((*lcd_scanline) > 153)
 				{

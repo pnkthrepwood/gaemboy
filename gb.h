@@ -76,6 +76,7 @@ struct gb
 
 	bool dbg_mode;
 	bool dbg_stepby;
+	int dbg_bp;
 	void dbg_fetch();
 
 //LCD

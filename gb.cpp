@@ -134,6 +134,7 @@ void gb::init()
 	lcd_mode_clk = 0;
 
 	dbg_mode = false;
+	dbg_bp = -1;
 }
 
 void gb::load(char* rom_name)
@@ -212,6 +213,12 @@ void gb::check_interrupts()
 
 void gb::cycle()
 {
+	if (pc == dbg_bp)
+	{
+		dbg_mode = true;
+		dbg_stepby = true;
+	}
+
 	//Fetch
 	opcode = mem[pc];
 	if (dbg_mode) dbg_fetch();
@@ -236,9 +243,9 @@ void gb::dbg_fetch()
 	printf(" @ 0x%X\t", pc);
 	printf("%s\tT:%i\n", memo(opcode), op_cycles[opcode]);
 
-	printf("---- ---- ---- ----\n");
+	printf("---- ---- dbg_bp %X\n", dbg_bp);
 
-	printf("A: %X\t", A);
+	printf(" A: %X\t", A);
 	printf("Z N H C\t\t"); 
 	printf("sp: %X\n", sp);
 
@@ -266,8 +273,26 @@ void gb::dbg_fetch()
 
 	if (dbg_stepby) 
 	{
-		char dbg_key_cont;
-		std::cin >> dbg_key_cont;
+		char dbgk;
+		int bp;
+		std::cin >> dbgk;
+		while (dbgk != '.') 
+		{
+			if (dbgk == '!') 
+			{
+				scanf("%X", &bp);
+				dbg_bp = bp;
+			}
+			if (dbgk == '_') 
+			{
+				dbg_stepby = false;
+			}
+			if (dbgk == '-')
+			{
+				dbg_mode = false;
+			}
+			std::cin >> dbgk;
+		}
 	}
 }
 
@@ -322,11 +347,17 @@ void gb::exec_instr()
 			sp = mem[nnnn];	
 			pc+=2;
 		break;
+		case 0x0C: //INC C
+			set_n(0);
+			set_h((C&0xF)==0xF);
+			C++;
+			set_z(C==0);
+		break;
 		case 0x0D: //DEC C
+			set_h((B&0xF)==0);
 			C--;
-			F |= (C)&1==0 	<<7;
-			F |= 1 			<<6;
-			F |= (C)==0xF 	<<5; //??	
+			set_n(1);
+			set_z(C==0);
 		break;
 		case 0x0E: //LD C, d8
 			C = n1;
@@ -443,9 +474,8 @@ void gb::exec_instr()
 			sp = nnnn;
 			pc += 2;
 		break;
-		case 0x32: //LD (HL-), A-;
+		case 0x32: //LD (HL-), A
 			mem[HL--] = A; 
-			A--;
 		break;
 		case 0x33: //INC SP	
 			sp++;	
@@ -465,6 +495,12 @@ void gb::exec_instr()
 		case 0x36: //LD (HL), d8
 			mem[HL] = n1;
 			pc++;
+		break;
+		case 0x39: //ADD HL, SP
+			set_h(half_carry_sum(L, sp&0xFF));
+			set_c((HL+sp)&0xF0000);
+			HL += sp;
+			set_n(0);
 		break;
 		case 0x3E: //LD A, d8
 			A = n1;
@@ -943,8 +979,12 @@ void gb::exec_instr()
 			mem[0xFF00+n1] = A;
 			pc++;
 		break;
-		case 0xE3: //LD (C), A
+		case 0xE2: //LD (C), A
 			mem[0xFF00+C] = A;
+		break;
+		case 0xE3: 
+		case 0xE4: //Invalid
+			wrong_opcode(opcode);
 		break;
 		case 0xE6: //AND d8
 			set_n(0);
