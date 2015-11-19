@@ -3,6 +3,28 @@
 #include <stdio.h>
 #include <iostream>
 
+inline char* lcd_modename(int mode)
+{
+	switch(mode)
+	{
+		case 0:return "VBlank"; 
+		case 3:return "VRAM scanline"; 
+		case 2:return "OAM read"; 
+		case 1:return "HBlank"; 
+	}
+}
+
+inline int lcd_modecyc(int mode)
+{
+	switch(mode)
+	{
+		case 0:return 204; 
+		case 3:return 172; 
+		case 2:return 80; 
+		case 1:return 456;
+	}
+}
+
 void gb::lcd_setmode(byte mode)
 {
 
@@ -14,6 +36,7 @@ void gb::lcd_update()
 	lcd_mode_clk += last_t;
 	
 	byte* lcd_scanline = &mem[0xFF44];
+	int lcd_mode = mem[0xFF41]&3;
 
 	//STAT, Bit 6: LYC ?= LY 
 	mem[0xFF41] &= 0xFB;
@@ -25,14 +48,16 @@ void gb::lcd_update()
 
 	if (dbg_mode) 
 	{
-		printf("\nscanzor %i\n", (*lcd_scanline));
-		printf("mode %X\tclock %i\n", mem[0xFF41]&3, lcd_mode_clk);
+		printf(">LCD Status\n");
+		printf("scanline[0xFF44]: %i\n", (*lcd_scanline));
+		printf("mode: %X -%s-\n", lcd_mode, lcd_modename(lcd_mode));
+		printf("clock: %i/%i\n", lcd_mode_clk, lcd_modecyc(lcd_mode));
 	}
 
-	switch(mem[0xFF41]&3) //STAT
+	switch(lcd_mode) //STAT
 	{
 		case 2: //OAM read
-			if (lcd_mode_clk >= 80)
+			if (lcd_mode_clk >= lcd_modecyc(2))
 			{
 				if (mem[0xFF41]&0x20)
 				{
@@ -45,7 +70,7 @@ void gb::lcd_update()
 		break;
 	
 		case 3: //VRAM scanline
-			if (lcd_mode_clk >= 172)
+			if (lcd_mode_clk >= lcd_modecyc(3))
 			{
 				if (mem[0xFF41]&0x10)
 				{
@@ -58,7 +83,7 @@ void gb::lcd_update()
 		break;
 		
 		case 0: //HBlank
-			if (lcd_mode_clk >= 204)
+			if (lcd_mode_clk >= lcd_modecyc(0))
 			{
 				if (mem[0xFF41]&0x08)
 				{
@@ -81,7 +106,7 @@ void gb::lcd_update()
 		break;
 	
 		case 1: //VBlank
-			if (lcd_mode_clk >= 456)
+			if (lcd_mode_clk >= lcd_modecyc(1))
 			{
 
 				lcd_mode_clk = 0;

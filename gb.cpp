@@ -243,7 +243,9 @@ void gb::dbg_fetch()
 	printf(" @ 0x%X\t", pc);
 	printf("%s\tT:%i\n", memo(opcode), op_cycles[opcode]);
 
-	printf("---- ---- dbg_bp %X\n", dbg_bp);
+	if (dbg_bp != -1) 
+		printf("!Next breakpoint @0x%4X\n", dbg_bp&0xFFFF) ;
+	printf("\n");
 
 	printf(" A: %X\t", A);
 	printf("Z N H C\t\t"); 
@@ -269,7 +271,7 @@ void gb::dbg_fetch()
 		printf("\t0x%X: %x\t", pc+i, m);
 		printf("%s\n", memo(mem[pc+i]));
 	}
-	printf("...\n");
+	printf("? ");
 
 	if (dbg_stepby) 
 	{
