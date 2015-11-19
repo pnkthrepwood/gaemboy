@@ -271,10 +271,10 @@ void gb::dbg_fetch()
 		printf("\t0x%X: %x\t", pc+i, m);
 		printf("%s\n", memo(mem[pc+i]));
 	}
-	printf("? ");
 
 	if (dbg_stepby) 
 	{
+		printf("? ");
 		char dbgk;
 		int bp;
 		std::cin >> dbgk;
