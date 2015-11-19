@@ -1052,7 +1052,7 @@ void gb::exec_instr()
 		case 0xFE: //CP d8
 			set_z(A==n1);
 			set_n(1);
-			set_h(0);
+			set_h((A&0xF)<(n1&0xF));
 			set_c(A<n1);
 			pc++;
 		break;
