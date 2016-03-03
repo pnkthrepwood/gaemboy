@@ -1,4 +1,3 @@
-#include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h> 
@@ -275,9 +274,9 @@ void gb::dbg_fetch()
 	if (dbg_stepby) 
 	{
 		printf("? ");
-		char dbgk;
 		int bp;
-		std::cin >> dbgk;
+		char dbgk;
+		scanf("%c", &dbgk);
 		while (dbgk != '.') 
 		{
 			if (dbgk == '!') 
@@ -293,7 +292,7 @@ void gb::dbg_fetch()
 			{
 				dbg_mode = false;
 			}
-			std::cin >> dbgk;
+			scanf(&dbgk);
 		}
 	}
 }
